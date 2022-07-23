@@ -12,6 +12,7 @@ type LogrusCommonConfig struct {
 	Level        logrus.Level
 	Output       io.Writer
 	DisableColor bool
+	SkipPkg      []string
 }
 
 func Init(l *LogrusLogger, config *LogrusCommonConfig) {
@@ -36,6 +37,6 @@ func Init(l *LogrusLogger, config *LogrusCommonConfig) {
 		EnableEntryOrder: true,
 	})
 
-	l.root.AddHook(NewCallerHook(config.Level))
+	l.root.AddHook(NewCallerHook(config.Level, config.SkipPkg))
 	log.SetGlobal(l)
 }
