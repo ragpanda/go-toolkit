@@ -2,8 +2,11 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"github.com/ragpanda/go-toolkit/log"
+	_ "github.com/ragpanda/go-toolkit/log/logrus-support"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -32,4 +35,12 @@ func (suite *DisplayTestSuite) TestSuccess() {
 	t := &Tmp{}
 	suite.Equal(MixUpDisplay(t, 0), Display(t))
 	suite.Equal(DigestDisplay(t), DigestDisplay(t))
+}
+
+func (suite *DisplayTestSuite) TestTypePrint() {
+	logger := &log.Fields{}
+
+	s := fmt.Sprintf("%T", logger)
+	log.Info(nil, "%v", s)
+
 }

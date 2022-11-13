@@ -1,66 +1,65 @@
 package log
 
-import "context"
+import (
+	"context"
+
+	"github.com/ragpanda/go-toolkit/log/consts"
+	logrus_support "github.com/ragpanda/go-toolkit/log/logrus-support"
+)
 
 func Debug(ctx context.Context, format string, args ...interface{}) {
-	Log(ctx, LogLevelDebug, format, args...)
+	Log(ctx, consts.LogLevelDebug, format, args...)
 }
 
 func Info(ctx context.Context, format string, args ...interface{}) {
-	Log(ctx, LogLevelInfo, format, args...)
+	Log(ctx, consts.LogLevelInfo, format, args...)
 }
 func Warn(ctx context.Context, format string, args ...interface{}) {
-	Log(ctx, LogLevelWarn, format, args...)
+	Log(ctx, consts.LogLevelWarn, format, args...)
 }
 
 func Error(ctx context.Context, format string, args ...interface{}) {
-	Log(ctx, LogLevelError, format, args...)
+	Log(ctx, consts.LogLevelError, format, args...)
 }
 
 func Fatal(ctx context.Context, format string, args ...interface{}) {
-	Log(ctx, LogLevelFatal, format, args...)
+	Log(ctx, consts.LogLevelFatal, format, args...)
 }
 
 func Panic(ctx context.Context, format string, args ...interface{}) {
-	Log(ctx, LogLevelPanic, format, args...)
+	Log(ctx, consts.LogLevelPanic, format, args...)
 }
 
-func Log(ctx context.Context, level LogLevel, format string, args ...interface{}) {
-	logger, ok := ctx.Value(LoggerCtxKey).(Logger)
-	if ok {
-		logger.Log(ctx, level, format, args...)
-		return
+func Log(ctx context.Context, level consts.LogLevel, format string, args ...interface{}) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	value := ctx.Value(LoggerCtxKey)
+	if value != nil {
+		logger, ok := value.(consts.Logger)
+		if ok {
+			logger.Log(ctx, level, format, args...)
+			return
+		}
 	}
 
 	globalLogger.Log(ctx, level, format, args...)
 }
 
-type LogLevel int
-
-const (
-	LogLevelDebug LogLevel = iota
-	LogLevelInfo
-	LogLevelWarn
-	LogLevelError
-	LogLevelFatal
-	LogLevelPanic
-)
-
-type Fields map[string]interface{}
-
-type Logger interface {
-	Log(ctx context.Context, level LogLevel, format string, args ...interface{})
-	WithFields(Fields) Logger
-}
-
 const LoggerCtxKey = "__logger"
 
-var globalLogger Logger
+var globalLogger consts.Logger
 
-func SetGlobal(l Logger) {
+func SetGlobal(l consts.Logger) {
 	globalLogger = l
 }
 
-func GetGlobal() Logger {
+func GetGlobal() consts.Logger {
 	return globalLogger
+}
+
+func init() {
+	l := logrus_support.NewLogrusLogger(context.Background(), nil)
+	globalLogger = l
 }
