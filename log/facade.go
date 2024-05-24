@@ -42,6 +42,7 @@ func Log(ctx context.Context, level consts.LogLevel, format string, args ...inte
 			logger.Log(ctx, level, format, args...)
 			return
 		}
+
 	}
 
 	globalLogger.Log(ctx, level, format, args...)
@@ -61,5 +62,5 @@ func GetGlobal() consts.Logger {
 
 func init() {
 	l := logrus_support.NewLogrusLogger(context.Background(), nil)
-	globalLogger = l
+	SetGlobal(l)
 }

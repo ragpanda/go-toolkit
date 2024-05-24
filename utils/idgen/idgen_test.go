@@ -20,6 +20,96 @@ func TestSnowflakeGenerateID(t *testing.T) {
 	}
 }
 
+func TestSnowflakeIDIncrease(t *testing.T) {
+	snowflake, err := NewSmallSnowflake(1)
+	if err != nil {
+		t.Errorf("Error creating Snowflake: %s", err)
+	}
+
+	lastID := int64(0)
+	for i := 0; i < 100000; i++ {
+		id := snowflake.GenerateID()
+		t.Logf("gen id %d", id)
+		// 检查生成的ID是否符合要求
+		if id < 0 || id >= (1<<52) {
+			t.Errorf("Generated ID is out of range")
+			return
+		}
+
+		if id <= lastID {
+			t.Errorf("Generated ID is not increasing: %d <= %d", id, lastID)
+			return
+		}
+		lastID = id
+	}
+
+}
+
+func TestSnowflakeGenerateStdID(t *testing.T) {
+	snowflake, err := NewStandardSnowflake(GenerateMachineIDByMac(14))
+	if err != nil {
+		t.Errorf("Error creating Snowflake: %s", err)
+	}
+
+	id := snowflake.GenerateID()
+	t.Logf("gen id %d", id)
+	// 检查生成的ID是否符合要求
+	if id < 0 || id >= (1<<63-1) {
+		t.Errorf("Generated ID is out of range")
+	}
+}
+
+func TestSnowflakeIDStdIncrease(t *testing.T) {
+	snowflake, err := NewStandardSnowflake(GenerateMachineIDByMac(14))
+	if err != nil {
+		t.Errorf("Error creating Snowflake: %s", err)
+	}
+
+	lastID := int64(0)
+	for i := 0; i < 300000; i++ {
+		id := snowflake.GenerateID()
+		//t.Logf("gen id %d", id)
+		// 检查生成的ID是否符合要求
+		if id < 0 || id >= (1<<63-1) {
+			t.Errorf("Generated ID is out of range")
+			return
+		}
+
+		if id <= lastID {
+			t.Errorf("Generated ID is not increasing: %d <= %d", id, lastID)
+			return
+		}
+		lastID = id
+	}
+
+}
+
+func TestSnowflakeIDIncreaseWaitTime(t *testing.T) {
+	snowflake, err := NewSmallSnowflake(1)
+	if err != nil {
+		t.Errorf("Error creating Snowflake: %s", err)
+	}
+
+	lastID := int64(0)
+	for i := 0; i < 1000; i++ {
+		id := snowflake.GenerateID()
+		t.Logf("gen id %d", id)
+		// 检查生成的ID是否符合要求
+		if id < 0 || id >= (1<<52) {
+			t.Errorf("Generated ID is out of range")
+			return
+		}
+
+		if id <= lastID {
+			t.Errorf("Generated ID is not increasing: %d <= %d", id, lastID)
+			return
+		}
+		lastID = id
+		time.Sleep(1 * time.Millisecond)
+	}
+
+}
+
 func TestSnowflakeConcurrency(t *testing.T) {
 	snowflake, err := NewSmallSnowflake(1)
 	if err != nil {
@@ -80,12 +170,16 @@ func TestSnowflakeClockBackwards(t *testing.T) {
 	}
 
 	// 模拟时钟回拨
+	_ = snowflake.GenerateID()
 	snowflake.lastTimestamp = time.Now().UnixNano()/1000000 + 1000
 
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("Expected panic for clock backwards")
+		} else {
+			t.Log(r)
 		}
+
 	}()
 
 	_ = snowflake.GenerateID()
