@@ -11,7 +11,7 @@ import (
 	"github.com/ragpanda/go-toolkit/log"
 )
 
-type SnowFlakeIDGenerator interface {
+type IDGenerator interface {
 	GenerateID() int64
 }
 
