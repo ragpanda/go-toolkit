@@ -13,7 +13,7 @@ const (
 	LogLevelPanic
 )
 
-type Fields map[string]interface{}
+type Fields map[string]string
 
 type Logger interface {
 	Log(ctx context.Context, level LogLevel, format string, args ...interface{})

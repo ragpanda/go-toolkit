@@ -4,22 +4,29 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ragpanda/go-toolkit/log"
+	"github.com/ragpanda/go-toolkit/metrics"
 )
 
 func StatMW(c *gin.Context) {
 	start := time.Now()
-	var err error
 	defer func() {
-		cost := time.Now().Sub(start)
-		consts.MetricAPICost.EmitTimer(cost.Milliseconds(),
-			consts.MetricAPICostTag_Path.Value(ctx.Request.URL.Path))
-
-		consts.MetricAPIQPS.EmitRate(1,
-			consts.MetricAPIQPSTag_Path.Value(ctx.Request.URL.Path))
-		if err != nil {
-			consts.MetricAPIError.EmitCounter(1,
-				consts.MetricAPIErrorTag_Path.Value(ctx.Request.URL.Path))
+		labels := metrics.APIRequest{
+			Method:           c.Request.Method,
+			Path:             c.Request.URL.Path,
+			StatusCode:       c.Request.Response.StatusCode,
+			Success:          false,
+			Duration:         0,
+			BusinessCategory: "",
 		}
+		end := time.Now()
+		labels.Duration = end.Sub(start)
+		if 200 < c.Request.Response.StatusCode && c.Request.Response.StatusCode < 400 {
+			labels.Success = true
+		}
+		metrics.RecordAPIRequest(labels)
+		log.Info(c, "[stat] api:%s %s %d %v reqs:%d,resps:%d", labels.Method, labels.Path, labels.StatusCode, labels.Duration,
+			c.Request.ContentLength, c.Request.Response.ContentLength)
 	}()
 	c.Next()
 }

@@ -59,9 +59,14 @@ func (self *LogrusLogger) Log(ctx context.Context, level consts.LogLevel, format
 }
 
 func (self *LogrusLogger) WithFields(f consts.Fields) consts.Logger {
+	field := logrus.Fields{}
+	for k, v := range f {
+		field[k] = v
+	}
+
 	newLogger := LogrusLogger{
 		root:  self.root,
-		entry: self.entry.WithFields((logrus.Fields)(f)),
+		entry: self.entry.WithFields((logrus.Fields)(field)),
 	}
 	return &newLogger
 }

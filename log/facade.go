@@ -30,6 +30,11 @@ func Panic(ctx context.Context, format string, args ...interface{}) {
 	Log(ctx, consts.LogLevelPanic, format, args...)
 }
 
+func WithField(ctx context.Context, kv consts.Fields) context.Context {
+	l := globalLogger.WithFields(kv)
+	return context.WithValue(ctx, LoggerCtxKey, l)
+}
+
 func Log(ctx context.Context, level consts.LogLevel, format string, args ...interface{}) {
 	if ctx == nil {
 		ctx = context.Background()

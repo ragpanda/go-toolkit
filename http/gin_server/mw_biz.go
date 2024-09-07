@@ -1,65 +1,31 @@
 package gin_server
 
 import (
-	"context"
-
 	"github.com/gin-gonic/gin"
+	"github.com/ragpanda/go-toolkit/biz"
+	"github.com/ragpanda/go-toolkit/log/logkit"
 )
 
-const BizDataKey = "_bizdata"
-
-type BizData struct {
-	UserID string         `json:"user_id"`
-	LogID  string         `json:"log_id"`
-	Custom map[string]any `json:"custom"`
-}
-
-func NewBizData() *BizData {
-	return &BizData{
-		Custom: make(map[string]any),
-	}
-}
-
-func (b *BizData) SetKey(k string, v any) {
-	b.Custom[k] = v
-}
-
-func (b *BizData) GetKey(k string) any {
-	return b.Custom[k]
-}
-
-func (b *BizData) DeepCopy() *BizData {
-	newData := NewBizData()
-	newData.UserID = b.UserID
-	newData.LogID = b.LogID
-	for k, v := range b.Custom {
-		newData.Custom[k] = v
-	}
-	return newData
-}
+const LogIDKey = "X-Log-Id"
 
 func BizDataMw(c *gin.Context) {
-	d := c.Value(BizDataKey)
+	d := c.Value(biz.BizDataKey)
 	if d == nil {
-		SetBizDataToGinCtx(c, NewBizData())
+		d = biz.NewBizData()
+		biz.SetBizDataToGinCtx(c, d.(*biz.BizData))
 	}
+
+	bizData := d.(*biz.BizData)
+
+	bizData.UserID = c.GetString("user")
+	bizData.FromIP = c.ClientIP()
+
+	logID := c.Request.Header.Get(LogIDKey)
+	if logID == "" {
+		logID = logkit.GetLogID()
+		c.Request.Header.Set(LogIDKey, logID)
+	}
+	bizData.LogID = logID
 
 	c.Next()
-}
-
-func GetBizData(c context.Context) *BizData {
-	d := c.Value(BizDataKey)
-	if d == nil {
-		return NewBizData()
-	}
-	return d.(*BizData)
-}
-
-func SetBizData(c context.Context, d *BizData) context.Context {
-	c = context.WithValue(c, BizDataKey, d)
-	return c
-}
-
-func SetBizDataToGinCtx(c *gin.Context, d *BizData) {
-	c.Set(BizDataKey, d)
 }

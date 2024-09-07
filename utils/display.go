@@ -9,10 +9,8 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"unicode/utf8"
 
 	"github.com/spf13/cast"
-	"golang.org/x/text/runes"
 )
 
 // display object info, the struct will be convert to json, %+v as the final method, basic type will be use %+v too
@@ -54,19 +52,13 @@ func Display(data interface{}) string {
 // mix up sensitive info to display
 func MixUpDisplay(data interface{}, probability float32) string {
 	dataStr := Display(data)
-	return runes.Map(func(r rune) rune {
+	dataBytes := []byte(dataStr)
+	for i := range dataBytes {
 		if rand.Float32() >= probability {
-			return r
-		} else {
-			bytes := make([]byte, utf8.UTFMax)
-			for k := range bytes {
-				bytes[k] = '*'
-			}
-			r, _ := utf8.DecodeRune(bytes)
-			return r
-
+			dataBytes[i] = byte('*')
 		}
-	}).String(dataStr)
+	}
+	return string(dataBytes)
 }
 
 // 简单摘要, 用于debug对比敏感信息
