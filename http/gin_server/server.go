@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/ragpanda/go-toolkit/log"
+	"github.com/ragpanda/go-toolkit/log/consts"
 )
 
 type GinHttpServer struct {
@@ -24,7 +24,12 @@ type GinHttpServer struct {
 }
 
 func NewGinHttpServer(config *GinConfig) *GinHttpServer {
-	serv := GinHttpServer{}
+	serv := GinHttpServer{
+		config: config,
+		once:   sync.Once{},
+		server: nil,
+		engine: nil,
+	}
 	return &serv
 }
 
@@ -32,6 +37,11 @@ func (self *GinHttpServer) Init() *GinHttpServer {
 	self.once.Do(func() {
 		self.fillDefault(self.config)
 		self.engine = gin.Default()
+		gin.DefaultWriter = log.GetLoggerWriter(log.GetGlobal(), consts.LogLevelInfo)
+		gin.DefaultErrorWriter = log.GetLoggerWriter(log.GetGlobal(), consts.LogLevelWarn)
+		if self.config.Mode != "" {
+			gin.SetMode(self.config.Mode)
+		}
 
 		if self.config.EnablePprof {
 			pprof.Register(self.engine, self.config.ProfilePath)
@@ -40,8 +50,8 @@ func (self *GinHttpServer) Init() *GinHttpServer {
 			self.engine.Use(BizDataMw, StatMW)
 		}
 
-		if self.config.EnableCROS {
-			self.engine.Use(cors.New(*self.config.CORS))
+		if corsConfig := self.config.CORS; corsConfig != nil && corsConfig.Enable {
+			self.engine.Use(NewCorsMW(corsConfig))
 		}
 
 		self.server = &http.Server{
@@ -51,6 +61,7 @@ func (self *GinHttpServer) Init() *GinHttpServer {
 			WriteTimeout:   60 * time.Second,
 			MaxHeaderBytes: 1 << 20,
 		}
+
 	})
 	return self
 }

@@ -1,15 +1,20 @@
 package gin_server
 
-import "github.com/gin-contrib/cors"
-
 type GinConfig struct {
-	Addr string
+	Addr string `yaml:"Addr" json:"Addr"`
+	Mode string `yaml:"Mode" json:"Mode"`
 
-	EnableBaseMw bool
-	EnablePprof  bool
-	EnableCROS   bool
+	EnableBaseMw bool `yaml:"EnableBaseMw" json:"EnableBaseMw"`
+	EnablePprof  bool `yaml:"EnablePprof" json:"EnablePprof"`
 
-	ProfilePath     string
-	CORS            *cors.Config
-	GracefulExitSec int64
+	ProfilePath string           `yaml:"ProfilePath" json:"ProfilePath"`
+	CORS        *CORSConfig      `yaml:"CORS" json:"CORS"`
+	RateLimit   *RateLimitConfig `yaml:"RateLimit" json:"RateLimit"`
+
+	GracefulExitSec int64 `yaml:"GracefulExitSec" json:"GracefulExitSec"`
+}
+
+type CORSConfig struct {
+	Enable       bool     `yaml:"Enable" json:"Enable"`
+	AllowOrigins []string `yaml:"AllowOrigins" json:"AllowOrigins"`
 }

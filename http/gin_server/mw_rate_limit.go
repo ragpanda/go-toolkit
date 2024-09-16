@@ -16,27 +16,27 @@ type GinRateLimiter struct {
 }
 
 type RateLimitConfig struct {
-	Rules []*RateLimitRule
+	Rules []*RateLimitRule `yaml:"Rules" json:"Rules"`
 }
 
 type RateLimitRule struct {
 	// Mode 限流模式
-	Mode RateLimitRuleMode
+	Mode RateLimitRuleMode `yaml:"Mode" json:"Mode"`
 	// MatchPathPrefix 匹配路径前缀
-	MatchPathPrefix string
+	MatchPathPrefix string `yaml:"MatchPathPrefix" json:"MatchPathPrefix"`
 
 	// PerUserLimit 用户限流值
-	PerUserLimit *int
+	PerUserLimit *int `yaml:"PerUserLimit" json:"PerUserLimit"`
 	// PerIPLimit IP 限流值
-	PerIPLimit *int
+	PerIPLimit *int `yaml:"PerIPLimit" json:"PerIPLimit"`
 	// GlobalLimit 全局限流值
-	GlobalLimit *int
+	GlobalLimit *int `yaml:"GlobalLimit" json:"GlobalLimit"`
 
 	// CycleSecond 限流周期，单位秒
-	CycleSecond int
+	CycleSecond int `yaml:"CycleSecond" json:"CycleSecond"`
 
 	// BreakIfMatch 为 true 时，匹配到该规则后不再继续匹配后续规则
-	BreakIfMatch bool
+	BreakIfMatch bool `yaml:"BreakIfMatch" json:"BreakIfMatch"`
 }
 
 type RuleItem struct {

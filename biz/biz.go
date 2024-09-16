@@ -2,8 +2,10 @@ package biz
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ragpanda/go-toolkit/utils"
 )
 
 const BizDataKey = "_bizdata"
@@ -28,6 +30,10 @@ func (b *BizData) SetKey(k string, v any) {
 func (b *BizData) GetKey(k string) any {
 	return b.Custom[k]
 }
+func (b *BizData) String() string {
+	s := fmt.Sprintf("[%s][%s][%s][%v]", b.UserID, b.FromIP, b.LogID, utils.Display(b.Custom))
+	return s
+}
 
 func (b *BizData) DeepCopy() *BizData {
 	newData := NewBizData()
@@ -40,6 +46,9 @@ func (b *BizData) DeepCopy() *BizData {
 }
 
 func GetBizData(c context.Context) *BizData {
+	if c == nil {
+		return nil
+	}
 	d := c.Value(BizDataKey)
 	if d == nil {
 		return nil

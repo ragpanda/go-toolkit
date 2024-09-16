@@ -2,6 +2,7 @@ package log
 
 import (
 	"context"
+	"io"
 
 	"github.com/ragpanda/go-toolkit/log/consts"
 	logrus_support "github.com/ragpanda/go-toolkit/log/logrus-support"
@@ -68,4 +69,21 @@ func GetGlobal() consts.Logger {
 func init() {
 	l := logrus_support.NewLogrusLogger(context.Background(), nil)
 	SetGlobal(l)
+}
+
+func GetLoggerWriter(logger consts.Logger, level consts.LogLevel) io.Writer {
+	return &functionalWriter{
+		logger: logger,
+		level:  level,
+	}
+}
+
+type functionalWriter struct {
+	logger consts.Logger
+	level  consts.LogLevel
+}
+
+func (w *functionalWriter) Write(p []byte) (n int, err error) {
+	w.logger.Log(context.Background(), w.level, string(p))
+	return len(p), nil
 }
