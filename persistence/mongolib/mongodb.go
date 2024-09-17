@@ -33,33 +33,33 @@ func (self *MongoDBRepository[T]) AttachConnection(ctx context.Context, client *
 	return self
 }
 
-func (self *MongoDBRepository[T]) GetByID(ctx context.Context, id string) (*T, error) {
+func (self *MongoDBRepository[T]) GetByID(ctx context.Context, id string) (T, error) {
 	var result T
 	err := self.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, nil
+			return result, nil
 		}
-		return nil, err
+		return result, err
 	}
-	return &result, nil
+	return result, nil
 }
 
-func (self *MongoDBRepository[T]) GetByIDList(ctx context.Context, ids []string) ([]*T, error) {
+func (self *MongoDBRepository[T]) GetByIDList(ctx context.Context, ids []string) ([]T, error) {
 	cursor, err := self.collection.Find(ctx, bson.M{"_id": bson.M{"$in": ids}})
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
-	var results []*T
+	var results []T
 	for cursor.Next(ctx) {
 		var elem T
 		err := cursor.Decode(&elem)
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, &elem)
+		results = append(results, elem)
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -69,12 +69,12 @@ func (self *MongoDBRepository[T]) GetByIDList(ctx context.Context, ids []string)
 	return results, nil
 }
 
-func (self *MongoDBRepository[T]) Create(ctx context.Context, t *T) (*string, error) {
+func (self *MongoDBRepository[T]) Create(ctx context.Context, t T) (*string, error) {
 	result, err := self.collection.InsertOne(ctx, t)
 	if err != nil {
 		return nil, err
 	}
-	id := (*t).GetID()
+	id := t.GetID()
 	if id == "" {
 		id = result.InsertedID.(primitive.ObjectID).Hex()
 	}
@@ -82,15 +82,15 @@ func (self *MongoDBRepository[T]) Create(ctx context.Context, t *T) (*string, er
 	return &id, nil
 }
 
-func (self *MongoDBRepository[T]) Save(ctx context.Context, t *T) error {
-	id := (*t).GetID()
+func (self *MongoDBRepository[T]) Save(ctx context.Context, t T) error {
+	id := t.GetID()
 	opts := options.Replace().SetUpsert(true)
 	_, err := self.collection.ReplaceOne(ctx, bson.M{"_id": id}, t, opts)
 	return err
 }
 
-func (self *MongoDBRepository[T]) Update(ctx context.Context, t *T) error {
-	id := (*t).GetID()
+func (self *MongoDBRepository[T]) Update(ctx context.Context, t T) error {
+	id := t.GetID()
 	_, err := self.collection.ReplaceOne(ctx, bson.M{"_id": id}, t)
 	return err
 }

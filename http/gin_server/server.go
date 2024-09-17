@@ -99,7 +99,7 @@ func (self *GinHttpServer) Run(ctx context.Context) error {
 	return e
 }
 
-func (self *GinHttpServer) GetEngine(group string) *gin.Engine {
+func (self *GinHttpServer) GetEngine() *gin.Engine {
 	return self.engine
 }
 
