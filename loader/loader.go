@@ -14,6 +14,12 @@ func NewLoader() *Loader {
 	return loader
 }
 
+func InitGlobalLoader() *Loader {
+	l := NewLoader()
+	defaultLoader = l
+	return l
+}
+
 func GetDefaultLoader() *Loader {
 	initOnce.Do(func() {
 		defaultLoader = NewLoader()
