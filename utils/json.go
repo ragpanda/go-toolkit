@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 )
 
 func Unmarshal(data []byte, v interface{}) error {
@@ -24,4 +25,32 @@ func Marshal(v interface{}) ([]byte, error) {
 		ret = ret[:len(ret)-1]
 	}
 	return ret, nil
+}
+
+func MustJsonDecodeString(v string, out interface{}) {
+	if err := Unmarshal([]byte(v), out); err != nil {
+		panic(fmt.Sprintf("json decode error: err=%s, data=%s", err.Error(), v))
+	}
+}
+
+func MustJsonEncodeString(v interface{}) string {
+	d, err := Marshal(v)
+	if err != nil {
+		panic(fmt.Sprintf("json encode error: err=%s, data=%+v", err.Error(), d))
+	}
+	return string(d)
+}
+
+func MustJsonEncodeBytes(v interface{}) []byte {
+	d, err := Marshal(v)
+	if err != nil {
+		panic(fmt.Sprintf("json encode error: err=%s, data=%+v", err.Error(), d))
+	}
+	return d
+}
+
+func JsonDeepCopy[T any](v T) *T {
+	d := new(T)
+	MustJsonDecodeString(MustJsonEncodeString(v), &d)
+	return d
 }

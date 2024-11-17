@@ -14,8 +14,9 @@ import (
 )
 
 type MongoConfig struct {
-	Name     string `json:"Name" yaml:"Name"`
-	MongoURI string `json:"MongoURI" yaml:"MongoURI"`
+	Name     string   `json:"Name" yaml:"Name"`
+	Alias    []string `json:"Alias" yaml:"Alias"`
+	MongoURI string   `json:"MongoURI" yaml:"MongoURI"`
 }
 
 type MongoDBPoolConfig struct {
@@ -58,6 +59,9 @@ func (pool *MongoDBPool) initConnections(ctx context.Context) error {
 			return err
 		}
 		pool.connectionMap.Store(cfg.Name, client)
+		for _, alias := range cfg.Alias {
+			pool.connectionMap.Store(alias, client)
+		}
 	}
 	return nil
 }

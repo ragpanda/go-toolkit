@@ -66,6 +66,10 @@ func (self *GinHttpServer) Init() *GinHttpServer {
 	return self
 }
 
+func (self *GinHttpServer) Shutdown(ctx context.Context) error {
+	return self.server.Shutdown(ctx)
+}
+
 func (self *GinHttpServer) Run(ctx context.Context) error {
 	var e error
 	positiveExit := make(chan struct{}, 1)

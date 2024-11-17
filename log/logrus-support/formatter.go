@@ -85,9 +85,9 @@ const (
 func logTypeToColor(level logrus.Level) string {
 	switch level {
 	case logrus.DebugLevel:
-		return Gray
-	case logrus.InfoLevel:
 		return White
+	case logrus.InfoLevel:
+		return Gray
 	case logrus.WarnLevel:
 		return Yellow
 	case logrus.ErrorLevel:
@@ -98,7 +98,7 @@ func logTypeToColor(level logrus.Level) string {
 		return RedBold
 	}
 
-	return White
+	return Gray
 }
 
 const (
